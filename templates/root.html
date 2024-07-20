@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Meteo</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+  </head>
+  <body>
+    <div class="row mt-5 mx-3">
+        <div class="col">
+            <ul class="list-group">
+                <li class="list-group-item active">История просмотра</li>
+                {% for city in history %}
+                    <li class="list-group-item">{{city}}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col mx-3">
+            <div class="input-group mb-3">
+                <input id="cityInput" onchange="citySuggest()" type="text" class="form-control" placeholder="Введите город" value="{{last_city_name}}">
+            </div>
+            <div id="suggestionedCities">
+
+            </div>
+
+            <div id="forecast" class="mx-auto mt-2">
+
+            </div>
+        </div>
+        <div class="col">
+            <ul id="cities_ul" class="list-group">
+                <li class="list-group-item active">Самые просматриваемые города</li>
+                {% for city in cities %}
+                    <ul class="list-group list-group-horizontal d-flex">
+                        <li class="list-group-item flex-grow-1">{{city.name}}</li>
+                        <li class="list-group-item">{{city.cnt}}</li>
+                    </ul>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+    <script>
+
+        function getForecast(lat, lon, city, fias_id){
+            
+
+            $.ajax({
+                    url: `/forecast?lat=${lat}&lon=${lon}&city_name=${city}&fias_id=${fias_id}`,  
+                    method: 'get',  
+                    dataType: 'html',     
+                    success: function(data){
+                        var json = JSON.parse(data); 
+                        var divForecast = document.getElementById('forecast');
+                        //divForecast.innerHTML = data;
+                        //console.log(json['times'][0])
+                        
+                        let newRow = document.createElement("ul");
+                        newRow.className = "list-group list-group-horizontal mb-1 d-flex";
+                        let timeCol = document.createElement("li");
+                        timeCol.className = "list-group-item";
+                        timeCol.innerHTML = 'время (в часах)';
+                        let tempCol = document.createElement("li");
+                        tempCol.className = "list-group-item";
+                        tempCol.innerHTML = 'температура (в градусах цельсия)';
+                        newRow.appendChild(timeCol);
+                        newRow.append(tempCol);
+
+                        divForecast.appendChild(newRow);
+                        
+                        for (let i = 0; i < json['times'].length; ++i) {
+                            let i_time = json['times'][i];
+                            let i_temp = json['temperatures'][i];
+
+                            let newRow = document.createElement("ul");
+                            newRow.className = "list-group list-group-horizontal mb-1 d-flex";
+                            let timeCol = document.createElement("li");
+                            timeCol.className = "list-group-item flex-grow-1";
+                            timeCol.innerHTML = i_time;
+                            let tempCol = document.createElement("li");
+                            tempCol.className = "list-group-item flex-grow-1";
+                            tempCol.innerHTML = i_temp;
+                            newRow.appendChild(timeCol);
+                            newRow.append(tempCol);
+
+                            divForecast.appendChild(newRow);
+                        }
+                    }
+            })
+        }
+
+        function citySuggest(){
+            let txt = document.getElementById('cityInput').value;
+            var d = document.getElementById('suggestionedCities');
+            d.innerHTML = '';
+            if (txt.length > 3) {
+                $.ajax({
+                    url: `/suggest_city?city=${txt}`,  
+                    method: 'get',  
+                    dataType: 'html',     
+                    success: function(data){ 
+                        var json = JSON.parse(data); 
+
+                        var d = document.getElementById('suggestionedCities');
+                        var newList = document.createElement("div");
+                        newList.className = "list-group";
+
+                        var items = json['suggestions'];
+                        for (let i = 0; i < items.length; ++i) {
+                            let newItem = document.createElement("button");
+                            newItem.className = "list-group-item list-group-item-action";
+                            newItem.innerHTML = items[i]['title'];
+                            newItem.onclick = function() {
+                                var cityInput = document.getElementById('cityInput');
+                                var d = document.getElementById('suggestionedCities');
+                                cityInput.value = items[i]['title'];
+                                d.innerHTML = '';
+                                getForecast(items[i]['lat'], items[i]['lon'], items[i]['title'], items[i]['fias_id']);
+                            };
+                            newList.appendChild(newItem);
+                        }
+
+                        d.appendChild(newList);
+                    }
+                });
+            }
+            if (txt.length === 0) {
+                var d = document.getElementById('suggestionedCities');
+                d.innerHTML = '';
+            }
+        }
+    </script>
+  </body>
+</html>

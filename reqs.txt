@@ -1,0 +1,8 @@
+alembic==1.13.2
+dadata==21.10.1
+fastapi==0.111.0
+openmeteo_requests==1.2.0
+requests-cache==1.2.1
+retry-requests==2.0.0
+pandas==2.2.1
+SQLAlchemy==2.0.31
