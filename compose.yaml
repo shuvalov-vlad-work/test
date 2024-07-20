@@ -2,10 +2,10 @@ version: '3.8'
 
 services:
   web:
-    build: ./fastapi
+    build: .
     command: uvicorn main:app --host 0.0.0.0 --port 8008
     volumes:
-      - ./fastapi:/app
+      - .:/app
     ports:
       - "8000:8008"
     depends_on:
