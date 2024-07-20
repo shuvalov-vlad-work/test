@@ -4,8 +4,8 @@ from dadata import DadataAsync
 
 load_dotenv() 
 
-token = os.getenv("DADATA_KEY")
-secret = os.getenv("DADATA_SECRET_KEY")
+token = 'f24c49e7dd08dd8865f7936dd583a5c9dc95e599' #os.getenv("DADATA_KEY")
+secret = '57accf7af58657a9892c3a40466dddbded40f54c' #os.getenv("DADATA_SECRET_KEY")
 
 async def get_city(source: str) -> str:
     async with DadataAsync(token, secret) as dadata:
